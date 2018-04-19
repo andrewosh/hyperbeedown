@@ -1,0 +1,33 @@
+{
+  "name": "hyperdbdown",
+  "version": "1.0.0",
+  "description": "A levelDOWN-compliant backend based on HyperDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/all.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewosh/hyperdbDOWN.git"
+  },
+  "keywords": [
+    "leveldown",
+    "hyperdb"
+  ],
+  "author": "Andrew Osheroff <andrewosh@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andrewosh/hyperdbDOWN/issues"
+  },
+  "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
+  "devDependencies": {
+    "hyperdb": "^2.1.0",
+    "ram": "0.0.3",
+    "standard": "^10.0.3",
+    "tape": "^4.8.0"
+  },
+  "dependencies": {
+    "abstract-leveldown": "^4.0.2",
+    "inherits": "^2.0.3"
+  }
+}
