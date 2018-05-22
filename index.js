@@ -31,6 +31,7 @@ HyperDown.prototype._open = function (opts, cb) {
   if (typeof opts.reduce !== 'function') throw new Error('Reduce must be a function.')
 
   this.status = Status.OPENING
+
   this._db = hyperdb(this.storage, opts.key, opts)
 
   this._db.ready(err => {
@@ -71,8 +72,14 @@ HyperDown.prototype._batch = function (array, opts, cb) {
 }
 
 HyperDown.prototype._iterator = function (opts) {
-  if (opts.start) opts.gte = opts.start
-  if (opts.end) opts.lte = end
+  if (opts.start) {
+    if (opts.reverse) opts.lte = opts.start
+    else opts.gte = opts.start
+  }
+  if (opts.end) {
+    if (opts.reverse) opts.gte = opts.end
+    else opts.lte = opts.end
+  }
   return new HyperIterator(this, opts)
 }
 
@@ -82,7 +89,11 @@ HyperDown.prototype.status = function () {
 
 function HyperIterator (db, opts) {
   var checkout = db._db.snapshot()
-  this.ite = checkout.iterator(opts) 
+
+  this._keyAsBuffer = opts.keyAsBuffer
+  this._valueAsBuffer = opts.valueAsBuffer
+
+  this.ite = db._db.lexIterator(opts)
   AbstractIterator.call(this, db)
 }
 inherits(HyperIterator, AbstractIterator)
@@ -90,10 +101,12 @@ inherits(HyperIterator, AbstractIterator)
 HyperIterator.prototype._next = function (cb) {
   if (!cb) throw new Error('next() requires a callback argument')
   this.ite.next((err, node) => {
-    console.log('ERR:', err, 'NODE:', node)
     if (err) return cb(err)
     if (!node) return cb()
+    if (node.length && node instanceof Array) node = node[0]
     // TODO: Better buffer conversion for key?
-    return cb(null, Buffer.from(node.key), node.value)
+    return cb(null,
+      !this._keyAsBuffer ? node.key : Buffer.from(node.key),
+      !this._valueAsBuffer ? node.value.toString('utf-8') : Buffer.from(node.value))
   })
 }
