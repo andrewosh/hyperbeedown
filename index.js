@@ -93,7 +93,7 @@ function HyperIterator (db, opts) {
   this._keyAsBuffer = opts.keyAsBuffer
   this._valueAsBuffer = opts.valueAsBuffer
 
-  this.ite = db._db.lexIterator(opts)
+  this.ite = checkout.lexIterator(opts)
   AbstractIterator.call(this, db)
 }
 inherits(HyperIterator, AbstractIterator)

@@ -2,10 +2,10 @@ const test = require('tape')
 const hyperdown = require('..')
 
 const suites = [
-  //require('abstract-leveldown/abstract/get-test'),
-  //require('abstract-leveldown/abstract/put-test'),
-  //require('abstract-leveldown/abstract/del-test'),
-  //require('abstract-leveldown/abstract/iterator-test'),
+  require('abstract-leveldown/abstract/get-test'),
+  require('abstract-leveldown/abstract/put-test'),
+  require('abstract-leveldown/abstract/del-test'),
+  require('abstract-leveldown/abstract/iterator-test'),
   require('abstract-leveldown/abstract/iterator-range-test')
 ]
 
