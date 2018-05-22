@@ -21,13 +21,13 @@
   },
   "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
   "devDependencies": {
-    "hyperdb": "^2.1.0",
+    "hyperdb": "andrewosh/hyperdb#lex-iterator-2",
     "ram": "0.0.3",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },
   "dependencies": {
-    "abstract-leveldown": "^4.0.2",
+    "abstract-leveldown": "andrewosh/abstract-leveldown",
     "inherits": "^2.0.3",
     "level": "^3.0.0"
   }
