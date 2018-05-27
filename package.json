@@ -29,6 +29,6 @@
   "dependencies": {
     "abstract-leveldown": "andrewosh/abstract-leveldown",
     "inherits": "^2.0.3",
-    "level": "^3.0.0"
+    "level": "^3.0.2"
   }
 }

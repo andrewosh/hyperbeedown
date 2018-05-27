@@ -5,6 +5,8 @@ const suites = [
   require('abstract-leveldown/abstract/get-test'),
   require('abstract-leveldown/abstract/put-test'),
   require('abstract-leveldown/abstract/del-test'),
+  require('abstract-leveldown/abstract/put-get-del-test'),
+  require('abstract-leveldown/abstract/batch-test'),
   require('abstract-leveldown/abstract/iterator-test'),
   require('abstract-leveldown/abstract/iterator-range-test')
 ]

@@ -5,6 +5,8 @@ const {
 const hyperdb = require('hyperdb')
 const inherits = require('inherits')
 
+const EMPTY = Buffer.alloc(0)
+
 const Status = {
   NEW: 'new',
   OPENING: 'opening',
@@ -42,29 +44,36 @@ HyperDown.prototype._open = function (opts, cb) {
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
-  this._db.get(key, opts, function (err, node) {
+  ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    
-    if (!node) {
-      var err = new Error('NotFound')
-      err.notFound = true
-      return cb(err)
-    }
+    this._db.get(key, opts, function (err, node) {
+      if (err) return cb(err)
 
-    var value = node.value
-    var key = node.key
+      if (!node) {
+        err = new Error('NotFound')
+        err.notFound = true
+        return cb(err)
+      }
 
-    if (!opts.asBuffer) value = value.toString('utf-8')
-    return cb(null, value)
+      var value = node.value
+      if (!opts.asBuffer) value = value.toString('utf-8')
+      return cb(null, value)
+    })
   })
 }
 
 HyperDown.prototype._put = function (key, value, opts, cb) {
-  return this._db.put(key, value, cb)
+  ensureValidKey(key, (err, key) => {
+    if (err) return cb(err)
+    return this._db.put(key, value, cb)
+  })
 }
 
 HyperDown.prototype._del = function (key, opts, cb) {
-  return this._db.del(key, cb)
+  ensureValidKey(key, (err, key) => {
+    if (err) return cb(err)
+    return this._db.del(key, cb)
+  })
 }
 
 HyperDown.prototype._batch = function (array, opts, cb) {
@@ -109,4 +118,19 @@ HyperIterator.prototype._next = function (cb) {
       !this._keyAsBuffer ? node.key : Buffer.from(node.key),
       !this._valueAsBuffer ? node.value.toString('utf-8') : Buffer.from(node.value))
   })
+}
+
+function ensureValidKey (key, cb) {
+  if (key === null) return cb(new Error('key cannot be `null` or `undefined`'))
+  if (key === undefined) return cb(new Error('key cannot be `null` or `undefined`'))
+  if (key === '') return cb(new Error('key cannot be an empty string'))
+  // Quick check that will pass for valid keys.
+  if (typeof key === 'string') return cb(null, key)
+
+  if (key instanceof Buffer) {
+    if (EMPTY.equals(key)) return cb(new Error('key cannot be an empty Buffer'))
+    key = key.toString('utf-8')
+  }
+  if ((key instanceof Array) && key.length === 0) return cb(new Error('key cannot be an empty string'))
+  return cb(null, key)
 }

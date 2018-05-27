@@ -16,6 +16,7 @@ environment:
 
 install:
   # install modules
+  - set PATH=%APPDATA%\npm;%APPVEYOR_BUILD_FOLDER%\node_modules\.bin;%PATH%
   - npm i
 
 # Post-install test scripts.
