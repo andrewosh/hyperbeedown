@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
   "devDependencies": {
-    "hyperdb": "andrewosh/hyperdb#lex-iterator-2",
+    "hyperdb": "andrewosh/hyperdb#lex-iterator-3",
     "ram": "0.0.3",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
