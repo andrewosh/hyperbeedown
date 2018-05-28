@@ -8,7 +8,8 @@ const suites = [
   require('abstract-leveldown/abstract/put-get-del-test'),
   require('abstract-leveldown/abstract/batch-test'),
   require('abstract-leveldown/abstract/iterator-test'),
-  require('abstract-leveldown/abstract/iterator-range-test')
+  require('abstract-leveldown/abstract/iterator-range-test'),
+  require('abstract-leveldown/abstract/chained-batch-test')
 ]
 
 suites.forEach(suite => {
@@ -23,5 +24,3 @@ suites.forEach(suite => {
     lex: true
   })
 })
-
-
