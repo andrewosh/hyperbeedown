@@ -1,5 +1,5 @@
 {
-  "name": "hyperdbdown",
+  "name": "hyperdown",
   "version": "1.0.0",
   "description": "A levelDOWN-compliant backend based on HyperDB",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andrewosh/hyperdbDOWN.git"
+    "url": "git+https://github.com/andrewosh/hyperdown.git"
   },
   "keywords": [
     "leveldown",
@@ -17,12 +17,14 @@
   "author": "Andrew Osheroff <andrewosh@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andrewosh/hyperdbDOWN/issues"
+    "url": "https://github.com/andrewosh/hyperdown/issues"
   },
-  "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
+  "homepage": "https://github.com/andrewosh/hyperdown#readme",
   "devDependencies": {
-    "hyperdb": "andrewosh/hyperdb#lex-iterator-3",
-    "ram": "0.0.3",
+    "hyperdb": "andrewosh/hyperdb#ready-for-typed-hyperdb",
+    "corestore": "andrewosh/corestore",
+    "union-hyperdb": "andrewosh/union-hyperdb",
+    "rimraf": "^2.6.2",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },

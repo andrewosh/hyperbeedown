@@ -2,7 +2,7 @@ const {
   AbstractLevelDOWN,
   AbstractIterator
 } = require('abstract-leveldown')
-const hyperdb = require('hyperdb')
+const uniondb = require('union-hyperdb')
 const inherits = require('inherits')
 
 const EMPTY = Buffer.alloc(0)
@@ -34,7 +34,7 @@ HyperDown.prototype._open = function (opts, cb) {
 
   this.status = Status.OPENING
 
-  this._db = hyperdb(this.storage, opts.key, opts)
+  this._db = uniondb(opts.factory, opts.key, opts)
 
   this._db.ready(err => {
     if (err) return cb(err)
@@ -48,6 +48,8 @@ HyperDown.prototype._get = function (key, opts, cb) {
     if (err) return cb(err)
     this._db.get(key, opts, function (err, node) {
       if (err) return cb(err)
+
+      console.log('NODE:', node)
 
       if (!node) {
         err = new Error('NotFound')
@@ -77,7 +79,13 @@ HyperDown.prototype._del = function (key, opts, cb) {
 }
 
 HyperDown.prototype._batch = function (array, opts, cb) {
-  return this._db.batch(array, cb)
+  return this._db.batch(array, (err, values) => {
+    values = values.filter(v => {
+      return !!v.value
+    })
+    console.log('BATCH VALUES:', values)
+    return cb(err, values)
+  })
 }
 
 HyperDown.prototype._iterator = function (opts) {
@@ -97,12 +105,12 @@ HyperDown.prototype.status = function () {
 }
 
 function HyperIterator (db, opts) {
-  var checkout = db._db.snapshot()
-
   this._keyAsBuffer = opts.keyAsBuffer
   this._valueAsBuffer = opts.valueAsBuffer
+  this._db = db._db
+  this._opts = opts
 
-  this.ite = checkout.lexIterator(opts)
+  this.ite = this._db.lexIterator(opts)
   AbstractIterator.call(this, db)
 }
 inherits(HyperIterator, AbstractIterator)
