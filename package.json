@@ -29,7 +29,7 @@
     "tape": "^4.8.0"
   },
   "dependencies": {
-    "abstract-leveldown": "andrewosh/abstract-leveldown",
+    "abstract-leveldown": "andrewosh/abstract-leveldown#no-snapshot-tests",
     "inherits": "^2.0.3",
     "level": "^3.0.2"
   }
