@@ -49,8 +49,6 @@ HyperDown.prototype._get = function (key, opts, cb) {
     this._db.get(key, opts, function (err, node) {
       if (err) return cb(err)
 
-      console.log('NODE:', node)
-
       if (!node) {
         err = new Error('NotFound')
         err.notFound = true
@@ -83,7 +81,6 @@ HyperDown.prototype._batch = function (array, opts, cb) {
     values = values.filter(v => {
       return !!v.value
     })
-    console.log('BATCH VALUES:', values)
     return cb(err, values)
   })
 }
