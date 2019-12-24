@@ -2,7 +2,7 @@ const {
   AbstractLevelDOWN,
   AbstractIterator
 } = require('abstract-leveldown')
-const hyperdb = require('hyperdb')
+const HyperBTree = require('hyper-btree')
 const inherits = require('inherits')
 
 const EMPTY = Buffer.alloc(0)
@@ -29,12 +29,18 @@ function HyperDown (storage) {
 }
 inherits(HyperDown, AbstractLevelDOWN)
 
-HyperDown.prototype._open = function (opts, cb) {
-  if (typeof opts.reduce !== 'function') throw new Error('Reduce must be a function.')
+HyperDown.prototype._serializeValue = function (value) {
+  return Buffer.isBuffer(value) ? value : String(value)
+}
 
+HyperDown.prototype._serializeKey = function (key) {
+  return Buffer.isBuffer(key) ? key : String(key)
+}
+
+HyperDown.prototype._open = function (opts, cb) {
   this.status = Status.OPENING
 
-  this._db = hyperdb(this.storage, opts.key, opts)
+  this._db = new HyperBTree(this.storage, opts.key, opts)
 
   this._db.ready(err => {
     if (err) return cb(err)
@@ -44,18 +50,18 @@ HyperDown.prototype._open = function (opts, cb) {
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
+  console.log('getting here')
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    this._db.get(key, opts, function (err, node) {
+    this._db.get(key, opts, function (err, value) {
       if (err) return cb(err)
 
-      if (!node) {
+      if (!value) {
         err = new Error('NotFound')
         err.notFound = true
         return cb(err)
       }
 
-      var value = node.value
       if (!opts.asBuffer) value = value.toString('utf-8')
       return cb(null, value)
     })
@@ -65,6 +71,7 @@ HyperDown.prototype._get = function (key, opts, cb) {
 HyperDown.prototype._put = function (key, value, opts, cb) {
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
+    console.log('putting here')
     return this._db.put(key, value, cb)
   })
 }
@@ -97,22 +104,33 @@ HyperDown.prototype.status = function () {
 }
 
 function HyperIterator (db, opts) {
-  var checkout = db._db.snapshot()
+  this.db = db
+  this.opts = opts
 
   this._keyAsBuffer = opts.keyAsBuffer
   this._valueAsBuffer = opts.valueAsBuffer
 
-  this.ite = checkout.lexIterator(opts)
+  // Set when first opened
+  this.ite = null
+  this.opened = false
+
   AbstractIterator.call(this, db)
 }
 inherits(HyperIterator, AbstractIterator)
 
 HyperIterator.prototype._next = function (cb) {
   if (!cb) throw new Error('next() requires a callback argument')
+  if (!this.opened) {
+    return this.db._db.snapshot((err, snapshot) => {
+      if (err) return cb(err)
+      this.ite = snapshot.iterator(this.opts)
+      this.opened = true
+      return this._next(cb)
+    })
+  }
   this.ite.next((err, node) => {
     if (err) return cb(err)
     if (!node) return cb()
-    if (node.length && node instanceof Array) node = node[0]
     // TODO: Better buffer conversion for key?
     return cb(null,
       !this._keyAsBuffer ? node.key : Buffer.from(node.key),
@@ -127,10 +145,13 @@ function ensureValidKey (key, cb) {
   // Quick check that will pass for valid keys.
   if (typeof key === 'string') return cb(null, key)
 
-  if (key instanceof Buffer) {
+  if (Buffer.isBuffer(key)) {
     if (EMPTY.equals(key)) return cb(new Error('key cannot be an empty Buffer'))
     key = key.toString('utf-8')
+  } else if (typeof key === 'number') {
+    key = String(key)
   }
   if ((key instanceof Array) && key.length === 0) return cb(new Error('key cannot be an empty string'))
+  console.log('KEY HERE IS:', key)
   return cb(null, key)
 }

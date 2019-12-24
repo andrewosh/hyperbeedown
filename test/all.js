@@ -1,26 +1,16 @@
 const test = require('tape')
-const hyperdown = require('..')
+const ram = require('random-access-memory')
+const suite = require('abstract-leveldown/test')
 
-const suites = [
-  require('abstract-leveldown/abstract/get-test'),
-  require('abstract-leveldown/abstract/put-test'),
-  require('abstract-leveldown/abstract/del-test'),
-  require('abstract-leveldown/abstract/put-get-del-test'),
-  require('abstract-leveldown/abstract/batch-test'),
-  require('abstract-leveldown/abstract/iterator-test'),
-  require('abstract-leveldown/abstract/iterator-range-test'),
-  require('abstract-leveldown/abstract/chained-batch-test')
-]
+const HyperDown = require('..')
 
-suites.forEach(suite => {
-  suite.all(hyperdown, test, null, {
-    reduce: (a, b) => {
-      if (!a) return b
-      return a
-    },
-    map: ({ key, value }) => {
-      return { key, value }
-    },
-    lex: true
-  })
+suite({
+  test,
+  snapshots: false,
+  seek: false,
+  createIfMissing: false,
+  errorIfExists: false,
+  factory: () => {
+    return new HyperDown(ram)
+  }
 })

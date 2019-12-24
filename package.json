@@ -1,7 +1,7 @@
 {
   "name": "hyperdbdown",
   "version": "1.0.0",
-  "description": "A levelDOWN-compliant backend based on HyperDB",
+  "description": "A levelDOWN-compliant backend based on HyperBTree",
   "main": "index.js",
   "scripts": {
     "test": "node test/all.js"
@@ -12,7 +12,9 @@
   },
   "keywords": [
     "leveldown",
-    "hyperdb"
+    "hyperdb",
+    "hyperarray",
+    "hyperbtree"
   ],
   "author": "Andrew Osheroff <andrewosh@gmail.com>",
   "license": "MIT",
@@ -21,14 +23,13 @@
   },
   "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
   "devDependencies": {
-    "hyperdb": "andrewosh/hyperdb#lex-iterator-3",
-    "ram": "0.0.3",
+    "hyper-btree": "1.0.0",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },
   "dependencies": {
-    "abstract-leveldown": "andrewosh/abstract-leveldown",
-    "inherits": "^2.0.3",
-    "level": "^3.0.2"
+    "abstract-leveldown": "^6.2.2",
+    "inherits": "^2.0.4",
+    "random-access-memory": "^3.1.1"
   }
 }
