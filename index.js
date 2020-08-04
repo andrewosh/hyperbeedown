@@ -2,20 +2,16 @@ const {
   AbstractLevelDOWN,
   AbstractIterator
 } = require('abstract-leveldown')
-const HyperBTree = require('hyper-btree')
 const inherits = require('inherits')
 
 const EMPTY = Buffer.alloc(0)
 
 module.exports = HyperDown
 
-function HyperDown (storage) {
-  if (!(this instanceof HyperDown)) return new HyperDown(storage)
-  this.storage = storage
-
+function HyperDown () {
+  if (!(this instanceof HyperDown)) return new HyperDown()
   // Set in _open.
-  this._db = null
-
+  this.tree = null
   AbstractLevelDOWN.call(this, storage)
 }
 inherits(HyperDown, AbstractLevelDOWN)
@@ -24,24 +20,25 @@ HyperDown.prototype._serializeKey = function (key) {
   return Buffer.isBuffer(key) ? key : String(key)
 }
 
-HyperDown.prototype._open = function (opts, cb) {
-  if (this._db) return process.nextTick(cb, null)
-  this._db = new HyperBTree(this.storage, opts.key, opts)
-  this._db.ready(cb)
+HyperDown.prototype._open = function (tree, cb) {
+  if (this.tree) return process.nextTick(cb, null)
+  this.tree = tree
+  this.tree.ready(cb)
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    this._db.get(key, opts, function (err, value) {
+    this.tree.get(key, opts, function (err, node) {
       if (err) return cb(err)
 
-      if (!value) {
+      if (!node) {
         err = new Error('NotFound')
         err.notFound = true
         return cb(err)
       }
 
+      const value = node.value
       if (!opts.asBuffer) value = value.toString('utf-8')
       return cb(null, value)
     })
@@ -51,19 +48,19 @@ HyperDown.prototype._get = function (key, opts, cb) {
 HyperDown.prototype._put = function (key, value, opts, cb) {
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    return this._db.put(key, value, cb)
+    return this.tree.put(key, value, cb)
   })
 }
 
 HyperDown.prototype._del = function (key, opts, cb) {
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    return this._db.del(key, cb)
+    return this.tree.del(key, cb)
   })
 }
 
 HyperDown.prototype._batch = function (array, opts, cb) {
-  return this._db.batch(array, cb)
+  return this.tree.batch(array, cb)
 }
 
 HyperDown.prototype._iterator = function (opts) {
@@ -96,22 +93,19 @@ inherits(HyperIterator, AbstractIterator)
 HyperIterator.prototype._next = function (cb) {
   if (!cb) throw new Error('next() requires a callback argument')
   if (!this.opened) {
-    return this.db._db.snapshot((err, snapshot) => {
-      if (err) return cb(err)
-      this.ite = snapshot.iterator(this.opts)
-      this.opened = true
-      return this._next(cb)
-    })
+    const snapshot = this.db.tree.snapshot()
+    this.ite = snapshot.createReadStream(this.opts)[Symbol.asyncIterable]
+    this.opened = true
+    return this._next(cb)
   }
-  this.ite.next((err, node) => {
-    if (err) return cb(err)
+  this.ite.next().then(node => {
     if (!node) return cb()
     // TODO: Better buffer conversion for key?
     return cb(null, node.key, node.value)
     return cb(null,
       !this._keyAsBuffer ? node.key : Buffer.from(node.key),
       !this._valueAsBuffer ? node.value.toString('utf-8') : Buffer.from(node.value))
-  })
+  }, err => cb(err))
 }
 
 function ensureValidKey (key, cb) {
