@@ -7,19 +7,10 @@ const inherits = require('inherits')
 
 const EMPTY = Buffer.alloc(0)
 
-const Status = {
-  NEW: 'new',
-  OPENING: 'opening',
-  OPEN: 'open',
-  CLOSING: 'closing',
-  CLOSED: 'closed'
-}
-
 module.exports = HyperDown
 
 function HyperDown (storage) {
   if (!(this instanceof HyperDown)) return new HyperDown(storage)
-  this.status = Status.NEW
   this.storage = storage
 
   // Set in _open.
@@ -29,28 +20,17 @@ function HyperDown (storage) {
 }
 inherits(HyperDown, AbstractLevelDOWN)
 
-HyperDown.prototype._serializeValue = function (value) {
-  return Buffer.isBuffer(value) ? value : String(value)
-}
-
 HyperDown.prototype._serializeKey = function (key) {
   return Buffer.isBuffer(key) ? key : String(key)
 }
 
 HyperDown.prototype._open = function (opts, cb) {
-  this.status = Status.OPENING
-
+  if (this._db) return process.nextTick(cb, null)
   this._db = new HyperBTree(this.storage, opts.key, opts)
-
-  this._db.ready(err => {
-    if (err) return cb(err)
-    this.status = Status.OPEN
-    return cb()
-  })
+  this._db.ready(cb)
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
-  console.log('getting here')
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
     this._db.get(key, opts, function (err, value) {
@@ -71,7 +51,6 @@ HyperDown.prototype._get = function (key, opts, cb) {
 HyperDown.prototype._put = function (key, value, opts, cb) {
   ensureValidKey(key, (err, key) => {
     if (err) return cb(err)
-    console.log('putting here')
     return this._db.put(key, value, cb)
   })
 }
@@ -97,10 +76,6 @@ HyperDown.prototype._iterator = function (opts) {
     else opts.lte = opts.end
   }
   return new HyperIterator(this, opts)
-}
-
-HyperDown.prototype.status = function () {
-  return this.status
 }
 
 function HyperIterator (db, opts) {
@@ -132,6 +107,7 @@ HyperIterator.prototype._next = function (cb) {
     if (err) return cb(err)
     if (!node) return cb()
     // TODO: Better buffer conversion for key?
+    return cb(null, node.key, node.value)
     return cb(null,
       !this._keyAsBuffer ? node.key : Buffer.from(node.key),
       !this._valueAsBuffer ? node.value.toString('utf-8') : Buffer.from(node.value))
@@ -152,6 +128,5 @@ function ensureValidKey (key, cb) {
     key = String(key)
   }
   if ((key instanceof Array) && key.length === 0) return cb(new Error('key cannot be an empty string'))
-  console.log('KEY HERE IS:', key)
   return cb(null, key)
 }
