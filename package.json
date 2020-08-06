@@ -23,13 +23,14 @@
   },
   "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
   "devDependencies": {
-    "hyper-btree": "1.0.0",
+    "hyperb": "0.0.0",
+    "hypercore": "^9.5.0",
+    "random-access-memory": "^3.1.1",
     "standard": "^10.0.3",
     "tape": "^4.8.0"
   },
   "dependencies": {
-    "abstract-leveldown": "^6.2.2",
-    "inherits": "^2.0.4",
-    "random-access-memory": "^3.1.1"
+    "abstract-leveldown": "^6.3.0",
+    "inherits": "^2.0.4"
   }
 }

@@ -1,16 +1,20 @@
 const test = require('tape')
 const ram = require('random-access-memory')
+const hypercore = require('hypercore')
+const BTree = require('hyperb')
 const suite = require('abstract-leveldown/test')
 
 const HyperDown = require('..')
 
 suite({
   test,
-  snapshots: false,
   seek: false,
   createIfMissing: false,
   errorIfExists: false,
   factory: () => {
-    return new HyperDown(ram)
+    const tree = new BTree(hypercore(ram), {
+      keyEncoding: 'utf8'
+    })
+    return new HyperDown(tree)
   }
 })

@@ -8,59 +8,70 @@ const EMPTY = Buffer.alloc(0)
 
 module.exports = HyperDown
 
-function HyperDown () {
+function HyperDown (tree) {
   if (!(this instanceof HyperDown)) return new HyperDown()
   // Set in _open.
-  this.tree = null
-  AbstractLevelDOWN.call(this, storage)
+  this.tree = tree
+  AbstractLevelDOWN.call(this)
 }
 inherits(HyperDown, AbstractLevelDOWN)
 
 HyperDown.prototype._serializeKey = function (key) {
-  return Buffer.isBuffer(key) ? key : String(key)
+  if (key === null) throw new Error('key cannot be `null` or `undefined`')
+  else if (key === undefined) throw new Error('key cannot be `null` or `undefined`')
+  else if (key === '') throw new Error('key cannot be an empty string')
+  // Quick check that will pass for valid keys.
+  else if (typeof key === 'string') return key
+  else if (Buffer.isBuffer(key) && EMPTY.equals(key)) throw new Error('key cannot be an empty Buffer')
+  else if ((key instanceof Array) && key.length === 0) throw new Error('key cannot be an empty string')
+  else if (typeof key === 'number' || typeof key === 'boolean') key = String(key)
+  else if (Array.isArray(key)) key = key.join(',')
+  return key
 }
 
-HyperDown.prototype._open = function (tree, cb) {
+HyperDown.prototype._serializeValue = function (value) {
+  if (value && Array.isArray(value)) return value.join(',')
+  else if (typeof value === 'number' || typeof value === 'boolean') value = String(value)
+  return value
+}
+
+HyperDown.prototype._open = function (opts, cb) {
   if (this.tree) return process.nextTick(cb, null)
-  this.tree = tree
   this.tree.ready(cb)
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
-  ensureValidKey(key, (err, key) => {
-    if (err) return cb(err)
-    this.tree.get(key, opts, function (err, node) {
-      if (err) return cb(err)
-
-      if (!node) {
-        err = new Error('NotFound')
-        err.notFound = true
-        return cb(err)
-      }
-
-      const value = node.value
-      if (!opts.asBuffer) value = value.toString('utf-8')
-      return cb(null, value)
-    })
-  })
+  this.tree.get(key, opts).then(node => {
+    if (!node || !node.value) {
+      err = new Error('NotFound')
+      err.notFound = true
+      return cb(err)
+    }
+    return cb(null, !opts.asBuffer ? node.value.toString('utf-8') : node.value)
+  }, err => cb(err))
 }
 
 HyperDown.prototype._put = function (key, value, opts, cb) {
-  ensureValidKey(key, (err, key) => {
-    if (err) return cb(err)
-    return this.tree.put(key, value, cb)
-  })
+  return this.tree.put(key, value).then(() => cb(null), err => cb(err))
 }
 
 HyperDown.prototype._del = function (key, opts, cb) {
-  ensureValidKey(key, (err, key) => {
-    if (err) return cb(err)
-    return this.tree.del(key, cb)
-  })
+  return this.tree.del(key).then(() => cb(null), err => cb(err))
+}
+
+HyperDown.prototype._batchPromise = async function (array, opts) {
+  const batch = this.tree.batch(opts)
+  for (let { type, key, value } of array) {
+    key = this._serializeKey(key)
+    value = value && this._serializeValue(value)
+    if (type === 'put') await batch.put(key, value)
+    else if (type === 'del') await batch.del(key)
+  }
+  return batch.flush()
 }
 
 HyperDown.prototype._batch = function (array, opts, cb) {
-  return this.tree.batch(array, cb)
+  return this._batchPromise(array, opts).then(() => cb(null), err => cb(err))
 }
 
 HyperDown.prototype._iterator = function (opts) {
@@ -76,15 +87,13 @@ HyperDown.prototype._iterator = function (opts) {
 }
 
 function HyperIterator (db, opts) {
-  this.db = db
+  this.tree = db.tree.snapshot()
   this.opts = opts
 
+  // Set in first next
+  
   this._keyAsBuffer = opts.keyAsBuffer
   this._valueAsBuffer = opts.valueAsBuffer
-
-  // Set when first opened
-  this.ite = null
-  this.opened = false
 
   AbstractIterator.call(this, db)
 }
@@ -92,35 +101,19 @@ inherits(HyperIterator, AbstractIterator)
 
 HyperIterator.prototype._next = function (cb) {
   if (!cb) throw new Error('next() requires a callback argument')
-  if (!this.opened) {
-    const snapshot = this.db.tree.snapshot()
-    this.ite = snapshot.createReadStream(this.opts)[Symbol.asyncIterable]
-    this.opened = true
-    return this._next(cb)
+  if (!this.ite) {
+    const stream = this.tree.createReadStream(this.opts)
+    this.ite = stream[Symbol.asyncIterator]() 
   }
-  this.ite.next().then(node => {
-    if (!node) return cb()
+  this.ite.next().then(({ value: node, done }) => {
+    if (done) return cb(null)
+    if (!node || !node.value) return this._next(cb)
     // TODO: Better buffer conversion for key?
-    return cb(null, node.key, node.value)
     return cb(null,
       !this._keyAsBuffer ? node.key : Buffer.from(node.key),
       !this._valueAsBuffer ? node.value.toString('utf-8') : Buffer.from(node.value))
   }, err => cb(err))
 }
 
-function ensureValidKey (key, cb) {
-  if (key === null) return cb(new Error('key cannot be `null` or `undefined`'))
-  if (key === undefined) return cb(new Error('key cannot be `null` or `undefined`'))
-  if (key === '') return cb(new Error('key cannot be an empty string'))
-  // Quick check that will pass for valid keys.
-  if (typeof key === 'string') return cb(null, key)
-
-  if (Buffer.isBuffer(key)) {
-    if (EMPTY.equals(key)) return cb(new Error('key cannot be an empty Buffer'))
-    key = key.toString('utf-8')
-  } else if (typeof key === 'number') {
-    key = String(key)
-  }
-  if ((key instanceof Array) && key.length === 0) return cb(new Error('key cannot be an empty string'))
-  return cb(null, key)
+function ensureValidKey (key) {
 }
