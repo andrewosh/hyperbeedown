@@ -5,7 +5,6 @@ const {
 
 const EMPTY = Buffer.alloc(0)
 
-
 module.exports = class HyperDown extends AbstractLevelDOWN {
   constructor (tree) {
     super()
@@ -42,7 +41,7 @@ module.exports = class HyperDown extends AbstractLevelDOWN {
   _get (key, opts, cb) {
     this.tree.get(key, opts).then(node => {
       if (!node || !node.value) {
-        let err = new Error('NotFound')
+        const err = new Error('NotFound')
         err.notFound = true
         return cb(err)
       }
@@ -93,7 +92,7 @@ class HyperIterator extends AbstractIterator {
     this.opts = opts
 
     // Set in first next
-    
+
     this._keyAsBuffer = opts.keyAsBuffer
     this._valueAsBuffer = opts.valueAsBuffer
   }
@@ -102,7 +101,7 @@ class HyperIterator extends AbstractIterator {
     if (!cb) throw new Error('next() requires a callback argument')
     if (!this.ite) {
       const stream = this.tree.createReadStream(this.opts)
-      this.ite = stream[Symbol.asyncIterator]() 
+      this.ite = stream[Symbol.asyncIterator]()
     }
     this.ite.next().then(({ value: node, done }) => {
       if (done) return cb(null)

@@ -4,7 +4,7 @@ const ram = require('random-access-memory')
 const hypercore = require('hypercore')
 const levelup = require('levelup')
 
-start ()
+start()
 
 async function start () {
   const core = hypercore(ram)
