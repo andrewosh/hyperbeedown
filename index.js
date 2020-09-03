@@ -32,7 +32,7 @@ module.exports = class HyperDown extends AbstractLevelDOWN {
     return value
   }
 
-  _open (opts, cb) {
+  _open (_, cb) {
     // Open options are not handled, because a Hyperbee must be passed in as a constructor arg.
     if (!this.tree) return process.nextTick(cb, new Error('A Hyperbee must be provided as a constructor argument'))
     return this.tree.ready().then(() => process.nextTick(cb, null), err => process.nextTick(cb, err))
@@ -49,11 +49,11 @@ module.exports = class HyperDown extends AbstractLevelDOWN {
     }, err => cb(err))
   }
 
-  _put (key, value, opts, cb) {
+  _put (key, value, _, cb) {
     return this.tree.put(key, value).then(() => cb(null), err => cb(err))
   }
 
-  _del (key, opts, cb) {
+  _del (key, _, cb) {
     return this.tree.del(key).then(() => cb(null), err => cb(err))
   }
 
