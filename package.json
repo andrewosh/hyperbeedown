@@ -1,14 +1,14 @@
 {
-  "name": "hyperdbdown",
+  "name": "hyperbeedown",
   "version": "1.0.0",
-  "description": "A levelDOWN-compliant backend based on HyperBTree",
+  "description": "A levelDOWN-compliant backend for Hyperbee",
   "main": "index.js",
   "scripts": {
     "test": "node test/all.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andrewosh/hyperdbDOWN.git"
+    "url": "git+https://github.com/andrewosh/hyperbeedown.git"
   },
   "keywords": [
     "leveldown",
@@ -19,11 +19,10 @@
   "author": "Andrew Osheroff <andrewosh@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andrewosh/hyperdbDOWN/issues"
+    "url": "https://github.com/andrewosh/hyperbeedown/issues"
   },
-  "homepage": "https://github.com/andrewosh/hyperdbDOWN#readme",
+  "homepage": "https://github.com/andrewosh/hyperbeedown#readme",
   "devDependencies": {
-    "hyperb": "git@github.com:mafintosh/hyperb#master",
     "hypercore": "^9.5.0",
     "random-access-memory": "^3.1.1",
     "standard": "^10.0.3",
@@ -31,6 +30,7 @@
   },
   "dependencies": {
     "abstract-leveldown": "^6.3.0",
+    "hyperbee": "0.0.14",
     "inherits": "^2.0.4"
   }
 }
