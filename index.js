@@ -36,8 +36,9 @@ HyperDown.prototype._serializeValue = function (value) {
 }
 
 HyperDown.prototype._open = function (opts, cb) {
-  if (this.tree) return process.nextTick(cb, null)
-  this.tree.ready(cb)
+  // Open options are not handled, because a Hyperbee must be passed in as a constructor arg.
+  if (!this.tree) return process.nextTick(cb, new Error('A Hyperbee must be provided as a constructor argument'))
+  return this.tree.ready().then(() => process.nextTick(cb, null), err => process.nextTick(cb, err))
 }
 
 HyperDown.prototype._get = function (key, opts, cb) {
