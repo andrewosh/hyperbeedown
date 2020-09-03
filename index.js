@@ -113,6 +113,3 @@ class HyperIterator extends AbstractIterator {
     }, err => cb(err))
   }
 }
-
-function ensureValidKey (key) {
-}
