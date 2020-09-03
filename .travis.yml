@@ -9,8 +9,6 @@ env:
   - NODE_ENV=test
 
 os:
-  - windows
-  - osx
   - linux
 
 cache:
