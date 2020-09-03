@@ -1,6 +1,17 @@
 language: node_js
-sudo: false
+
 node_js:
-  - 6
-  - 8
-  - 9
+  - '12'
+  - '14'
+  - 'lts/*'
+
+env:
+  - NODE_ENV=test
+
+os:
+  - windows
+  - osx
+  - linux
+
+cache:
+  npm: false
