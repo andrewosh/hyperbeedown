@@ -1,10 +1,10 @@
 const test = require('tape')
 const ram = require('random-access-memory')
 const hypercore = require('hypercore')
-const BTree = require('hyperb')
+const Hyperbee = require('hyperbee')
 const suite = require('abstract-leveldown/test')
 
-const HyperDown = require('..')
+const HyperbeeDown = require('..')
 
 suite({
   test,
@@ -12,9 +12,9 @@ suite({
   createIfMissing: false,
   errorIfExists: false,
   factory: () => {
-    const tree = new BTree(hypercore(ram), {
+    const tree = new Hyperbee(hypercore(ram), {
       keyEncoding: 'utf8'
     })
-    return new HyperDown(tree)
+    return new HyperbeeDown(tree)
   }
 })
