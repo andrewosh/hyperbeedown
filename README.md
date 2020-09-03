@@ -20,4 +20,4 @@ console.log(await db.get('hello'))
 ```
 
 ## License
-MIT
+[MIT](./LICENSE)
