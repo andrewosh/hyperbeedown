@@ -10,8 +10,6 @@ A Leveldown for Hyperbee.
 ```js
 const core = hypercore(ram)
 const tree = new Hyperbee(core)
-await tree.ready()
-
 const down = new HyperbeeDown(tree)
 const db = levelup(down)
 
