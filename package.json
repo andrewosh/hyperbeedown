@@ -1,6 +1,6 @@
 {
   "name": "hyperbeedown",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A levelDOWN-compliant backend for Hyperbee",
   "main": "index.js",
   "scripts": {
